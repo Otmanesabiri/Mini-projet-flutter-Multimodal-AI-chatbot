@@ -1,31 +1,25 @@
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
-import 'package:ai_chat_app/main.dart'; // Import MyApp to access apiBaseUrl
+import 'package:ai_chat_app/main.dart';
 
-// Import the generated file
-import 'injection.config.dart';
+// Import our manual implementation
+import 'injection_manual.dart';
 
 final getIt = GetIt.instance;
 
-@InjectableInit(
-  initializerName: r'$initGetIt', // default
-  preferRelativeImports: true, // default
-  asExtension: false, // default
-)
-Future<void> init() async {
-  // Manual registration of ChatApiService is removed.
-  // $initGetIt will now use the generated registrations.
-  $initGetIt(getIt);
-}
-
-// Add a module to provide dependencies like baseUrl
 @module
 abstract class RegisterModule {
   @Named('baseUrl')
   @lazySingleton
   String get baseUrl => MyApp.apiBaseUrl;
+}
 
-  // If Dio needed to be configured and injected:
-  // @lazySingleton
-  // Dio get dio => Dio(); // Example: basic Dio instance
+Future<void> init() async {
+  try {
+    // Use our manual implementation instead of the generated one
+    $initGetIt(getIt);
+  } catch (e) {
+    print('Error initializing dependencies: $e');
+    rethrow;
+  }
 }

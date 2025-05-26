@@ -30,8 +30,8 @@ _i174.GetIt $initGetIt(
     () => registerModule.baseUrl,
     instanceName: 'baseUrl',
   );
-  gh.lazySingleton<_i101.ChatApiService>(
-      () => _i101.ChatApiService(gh<String>(instanceName: 'baseUrl')));
+  gh.lazySingleton<_i101.ChatApiService>(() =>
+      _i101.ChatApiService(baseUrl: gh<String>(instanceName: 'baseUrl')));
   return getIt;
 }
 
