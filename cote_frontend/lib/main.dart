@@ -1,31 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ai_chat_app/features/chat/presentation/chat_page.dart';
-import 'package:ai_chat_app/features/login/presentation/login_page.dart';
-import 'package:ai_chat_app/features/splash/presentation/splash_page.dart';
-import 'package:ai_chat_app/injection.dart' as di;
+import 'pages/login_page.dart';
+import 'pages/chatbot_page.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await di.init();
-  runApp(MyApp());
+void main() {
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  // Example: Define your backend base URL here
-  static const String apiBaseUrl = "http://localhost:8000"; // or your server's IP
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'AI Chat App',
+      title: 'AI Chatbot Multimodal',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        brightness: Brightness.light,
+        fontFamily: 'Roboto',
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+          elevation: 2,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
       ),
-      home: SplashPage(),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        primarySwatch: Colors.blue,
+        fontFamily: 'Roboto',
+      ),
+      initialRoute: '/',
       routes: {
-        '/login': (context) => LoginPage(),
-        '/chat': (context) => ChatPage(),
+        '/': (context) => const LoginPage(),
+        '/bot': (context) => const ChatbotPage(),
       },
     );
   }

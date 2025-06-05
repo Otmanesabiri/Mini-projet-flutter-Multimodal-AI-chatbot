@@ -37,6 +37,7 @@ dependencies:
   path_provider: ^2.1.0
   internet_connection_checker: ^1.0.0
   dartz: ^0.10.1
+  uuid: ^4.2.1  # Added for generating unique IDs
   
   # Media handling
   file_picker: ^5.5.0
@@ -66,8 +67,11 @@ dev_dependencies:
   
 flutter:
   uses-material-design: true
+  
   assets:
     - assets/images/
     - assets/icons/
     - assets/lottie/
     - assets/fonts/
+  
+  # Remarque: NE PAS utiliser "assets/assets/"

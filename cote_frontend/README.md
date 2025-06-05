@@ -157,6 +157,79 @@ This chatbot serves as a frontend interface for various AI capabilities:
 - **Knowledge Integration**: Access and synthesize information from various sources
 - **Personalization**: Adapt responses based on user preferences and history
 
----
+## 🚀 Guide de développement du chatbot
 
-*This application represents a modern approach to AI-human interaction, combining cutting-edge technology with thoughtful user experience design to create a powerful, accessible, and intuitive communication tool.*
+### Architecture de l'application
+
+Le développement de notre chatbot implique deux composants principaux:
+1. **Frontend Flutter**: L'interface utilisateur interactive
+2. **Backend Python**: L'API qui gère l'authentification et la communication avec les modèles LLM
+
+### Développement Frontend avec Flutter
+
+#### Structure de base
+- L'application démarre avec `main.dart`, qui initialise les dépendances et lance le widget `MyApp`
+- Utilisation de widgets stateful pour la gestion dynamique des conversations
+- Organisation en couches suivant le principe du Clean Architecture
+
+#### Pages principales
+1. **SplashPage**: Écran de démarrage qui vérifie l'authentification
+2. **LoginPage**: Gestion de l'authentification utilisateur
+3. **ChatPage**: Interface principale du chatbot
+
+#### Gestion des messages
+- Utilisation de `ListView.builder` pour afficher la liste des messages
+- Style différencié pour les messages utilisateur vs assistant
+- Défilement automatique vers les nouveaux messages
+- Support pour différents types de contenu (texte, images, code)
+
+#### Interaction avec le backend
+- Requêtes HTTP avec Dio pour communiquer avec l'API
+- Gestion des tokens d'authentification JWT
+- Stockage local avec SharedPreferences pour la session utilisateur
+
+### Interaction avec les modèles LLM
+
+Notre application peut interagir avec différents modèles de langage:
+
+1. **Via notre backend Python**:
+   - Les requêtes sont envoyées au backend qui communique avec le LLM
+   - Le backend maintient le contexte de la conversation
+   - Format JSON pour l'échange de données
+
+2. **Connexion directe aux API LLM**:
+   - Pour les modèles comme OpenAI: `https://api.openai.com/v1/chat/completions`
+   - Pour les modèles locaux comme Ollama: `http://localhost:11434/v1/chat/completions`
+   - Chaque requête doit inclure l'historique complet pour maintenir le contexte
+
+#### Exemple de format de requête
+
+```json
+{
+  "model": "gpt-3.5-turbo",
+  "messages": [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "Hello!"},
+    {"role": "assistant", "content": "Hi there! How can I help you today?"},
+    {"role": "user", "content": "What's the weather like?"}
+  ]
+}
+```
+
+### Améliorations multimodales
+
+Notre application va au-delà du simple texte pour offrir:
+- **Reconnaissance vocale**: Conversion parole-texte via `speech_to_text`
+- **Synthèse vocale**: Lecture des réponses via `flutter_tts`
+- **Traitement d'images**: Envoi et analyse d'images
+- **Partage de fichiers**: Support pour différents types de médias
+
+### Conseils pour les développeurs
+
+1. Utilisez `BLoC` pour séparer logique métier et interface
+2. Implémentez le mécanisme de token refresh pour maintenir la session
+3. Ajoutez des indicateurs de chargement pendant les communications avec l'API
+4. Gérez correctement les erreurs réseau et serveur
+5. Testez avec différentes tailles d'écran pour une interface responsive
+
+*Cette application représente une approche moderne de l'interaction homme-IA, combinant technologie de pointe et design UX réfléchi pour créer un outil de communication puissant, accessible et intuitif.*
