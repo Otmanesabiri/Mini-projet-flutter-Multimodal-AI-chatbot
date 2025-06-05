@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../services/deepseek_service.dart';
+import '../services/memory_storage_service.dart';
 import '../models/message.dart';
+import '../models/conversation.dart';
 
 class ChatbotPage extends StatefulWidget {
   const ChatbotPage({super.key});
@@ -20,21 +22,45 @@ class _ChatbotPageState extends State<ChatbotPage> {
   
   bool _isLoading = false;
   File? _selectedImage;
+  Conversation? _currentConversation;
 
   @override
   void initState() {
     super.initState();
-    _addWelcomeMessage();
+    _initializeConversation();
+  }
+
+  Future<void> _initializeConversation() async {
+    // Créer une nouvelle conversation ou charger la dernière
+    final conversations = MemoryStorageService.getAllConversations();
+    if (conversations.isNotEmpty) {
+      _currentConversation = conversations.first; // Dernière conversation
+      setState(() {
+        _messages.clear();
+        _messages.addAll(_currentConversation!.messages);
+      });
+    } else {
+      _currentConversation = MemoryStorageService.createNewConversation();
+      _addWelcomeMessage();
+    }
   }
 
   void _addWelcomeMessage() {
+    final welcomeMessage = ChatMessage(
+      role: 'assistant',
+      content: 'Bonjour ! Je suis votre assistant IA multimodal. Comment puis-je vous aider aujourd\'hui ?',
+      timestamp: DateTime.now(),
+    );
+    
     setState(() {
-      _messages.add(ChatMessage(
-        role: 'assistant',
-        content: 'Bonjour ! Je suis votre assistant IA multimodal. Comment puis-je vous aider aujourd\'hui ?',
-        timestamp: DateTime.now(),
-      ));
+      _messages.add(welcomeMessage);
     });
+    
+    // Sauvegarder dans la conversation actuelle
+    if (_currentConversation != null) {
+      _currentConversation!.addMessage(welcomeMessage);
+      // Pas besoin de sauvegarder avec MemoryStorageService
+    }
   }
 
   Future<void> _sendMessage() async {
@@ -42,7 +68,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
     if (text.isEmpty && _selectedImage == null) return;
 
     // Ajouter le message de l'utilisateur
-    final userMessage = ChatMessage(
+    final userMessage = ChatMessage.withImage(
       role: 'user',
       content: text.isNotEmpty ? text : 'Image envoyée',
       timestamp: DateTime.now(),
@@ -53,6 +79,12 @@ class _ChatbotPageState extends State<ChatbotPage> {
       _messages.add(userMessage);
       _isLoading = true;
     });
+
+    // Sauvegarder le message de l'utilisateur
+    if (_currentConversation != null) {
+      _currentConversation!.addMessage(userMessage);
+      MemoryStorageService.addMessageToConversation(_currentConversation!.id, userMessage);
+    }
 
     _messageController.clear();
     _selectedImage = null;
@@ -72,23 +104,39 @@ class _ChatbotPageState extends State<ChatbotPage> {
       final response = await _deepSeekService.sendMessage(messageHistory);
 
       // Ajouter la réponse de l'assistant
+      final assistantMessage = ChatMessage(
+        role: 'assistant',
+        content: response,
+        timestamp: DateTime.now(),
+      );
+
       setState(() {
-        _messages.add(ChatMessage(
-          role: 'assistant',
-          content: response,
-          timestamp: DateTime.now(),
-        ));
+        _messages.add(assistantMessage);
         _isLoading = false;
       });
+
+      // Sauvegarder la réponse de l'assistant
+      if (_currentConversation != null) {
+        _currentConversation!.addMessage(assistantMessage);
+        MemoryStorageService.addMessageToConversation(_currentConversation!.id, assistantMessage);
+      }
     } catch (e) {
+      final errorMessage = ChatMessage(
+        role: 'assistant',
+        content: 'Désolé, une erreur s\'est produite. Veuillez réessayer.',
+        timestamp: DateTime.now(),
+      );
+
       setState(() {
-        _messages.add(ChatMessage(
-          role: 'assistant',
-          content: 'Désolé, une erreur s\'est produite. Veuillez réessayer.',
-          timestamp: DateTime.now(),
-        ));
+        _messages.add(errorMessage);
         _isLoading = false;
       });
+
+      // Sauvegarder le message d'erreur
+      if (_currentConversation != null) {
+        _currentConversation!.addMessage(errorMessage);
+        MemoryStorageService.addMessageToConversation(_currentConversation!.id, errorMessage);
+      }
     }
 
     _scrollToBottom();
@@ -115,12 +163,156 @@ class _ChatbotPageState extends State<ChatbotPage> {
     });
   }
 
+  // Gestion des conversations
+  Future<void> _createNewConversation() async {
+    _currentConversation = MemoryStorageService.createNewConversation();
+    setState(() {
+      _messages.clear();
+    });
+    _addWelcomeMessage();
+  }
+
+  Future<void> _showConversationsList() async {
+    final conversations = MemoryStorageService.getAllConversations();
+    if (conversations.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Aucune conversation sauvegardée')),
+      );
+      return;
+    }
+
+    final selectedConversation = await showDialog<Conversation>(
+      context: context,
+      builder: (context) => _ConversationsListDialog(conversations: conversations),
+    );
+
+    if (selectedConversation != null) {
+      _currentConversation = selectedConversation;
+      setState(() {
+        _messages.clear();
+        _messages.addAll(_currentConversation!.messages);
+      });
+      _scrollToBottom();
+    }
+  }
+
+  Future<void> _clearCurrentConversation() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Effacer conversation'),
+        content: const Text('Êtes-vous sûr de vouloir effacer cette conversation ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Effacer'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && _currentConversation != null) {
+      MemoryStorageService.deleteConversation(_currentConversation!.id);
+      _createNewConversation();
+    }
+  }
+
+  Future<void> _clearAllConversations() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Effacer tout l\'historique'),
+        content: const Text('Êtes-vous sûr de vouloir effacer toutes les conversations ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Tout effacer'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      MemoryStorageService.clearAllConversations();
+      _createNewConversation();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AI Chatbot Multimodal'),
+        title: Text(_currentConversation?.title ?? 'AI Chatbot Multimodal'),
         actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              switch (value) {
+                case 'new_conversation':
+                  _createNewConversation();
+                  break;
+                case 'conversations_list':
+                  _showConversationsList();
+                  break;
+                case 'clear_current':
+                  _clearCurrentConversation();
+                  break;
+                case 'clear_all':
+                  _clearAllConversations();
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'new_conversation',
+                child: Row(
+                  children: [
+                    Icon(Icons.add),
+                    SizedBox(width: 8),
+                    Text('Nouvelle conversation'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'conversations_list',
+                child: Row(
+                  children: [
+                    Icon(Icons.history),
+                    SizedBox(width: 8),
+                    Text('Historique'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'clear_current',
+                child: Row(
+                  children: [
+                    Icon(Icons.clear),
+                    SizedBox(width: 8),
+                    Text('Effacer conversation'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'clear_all',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_forever),
+                    SizedBox(width: 8),
+                    Text('Tout effacer'),
+                  ],
+                ),
+              ),
+            ],
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
@@ -279,7 +471,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
           BoxShadow(
             offset: const Offset(0, -2),
             blurRadius: 4,
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
           ),
         ],
       ),
@@ -375,5 +567,81 @@ class _ChatbotPageState extends State<ChatbotPage> {
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+}
+
+// Widget pour afficher la liste des conversations
+class _ConversationsListDialog extends StatelessWidget {
+  final List<Conversation> conversations;
+
+  const _ConversationsListDialog({required this.conversations});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Historique des conversations'),
+      content: SizedBox(
+        width: double.maxFinite,
+        height: 300,
+        child: ListView.builder(
+          itemCount: conversations.length,
+          itemBuilder: (context, index) {
+            final conversation = conversations[index];
+            final messageCount = conversation.messages.length;
+            final lastMessage = messageCount > 0 
+                ? conversation.messages.last.content
+                : 'Conversation vide';
+            
+            return ListTile(
+              title: Text(
+                conversation.title,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    lastMessage.length > 50 
+                        ? '${lastMessage.substring(0, 50)}...'
+                        : lastMessage,
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${_formatDate(conversation.updatedAt)} • $messageCount messages',
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              onTap: () => Navigator.pop(context, conversation),
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Fermer'),
+        ),
+      ],
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+    
+    if (difference.inDays > 0) {
+      return '${difference.inDays}j';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}min';
+    } else {
+      return 'Maintenant';
+    }
   }
 }

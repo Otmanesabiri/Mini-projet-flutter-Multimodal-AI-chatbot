@@ -386,6 +386,18 @@
       "languageVersion": "3.1"
     },
     {
+      "name": "floor_annotation",
+      "rootUri": "file:///home/red/.pub-cache/hosted/pub.dev/floor_annotation-1.5.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "floor_generator",
+      "rootUri": "file:///home/red/.pub-cache/hosted/pub.dev/floor_generator-1.5.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
       "name": "flutter",
       "rootUri": "file:///home/red/development/flutter/packages/flutter",
       "packageUri": "lib/",
@@ -502,6 +514,12 @@
     {
       "name": "hive",
       "rootUri": "file:///home/red/.pub-cache/hosted/pub.dev/hive-2.2.3",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "hive_generator",
+      "rootUri": "file:///home/red/.pub-cache/hosted/pub.dev/hive_generator-2.0.1",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -642,6 +660,12 @@
       "rootUri": "file:///home/red/.pub-cache/hosted/pub.dev/lints-2.1.1",
       "packageUri": "lib/",
       "languageVersion": "3.0"
+    },
+    {
+      "name": "lists",
+      "rootUri": "file:///home/red/.pub-cache/hosted/pub.dev/lists-1.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "logging",
@@ -920,6 +944,12 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "source_helper",
+      "rootUri": "file:///home/red/.pub-cache/hosted/pub.dev/source_helper-1.3.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
       "name": "source_map_stack_trace",
       "rootUri": "file:///home/red/.pub-cache/hosted/pub.dev/source_map_stack_trace-2.1.2",
       "packageUri": "lib/",
@@ -1016,6 +1046,12 @@
       "languageVersion": "3.1"
     },
     {
+      "name": "strings",
+      "rootUri": "file:///home/red/.pub-cache/hosted/pub.dev/strings-3.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "synchronized",
       "rootUri": "file:///home/red/.pub-cache/hosted/pub.dev/synchronized-3.3.1",
       "packageUri": "lib/",
@@ -1056,6 +1092,12 @@
       "rootUri": "file:///home/red/.pub-cache/hosted/pub.dev/typed_data-1.4.0",
       "packageUri": "lib/",
       "languageVersion": "3.5"
+    },
+    {
+      "name": "unicode",
+      "rootUri": "file:///home/red/.pub-cache/hosted/pub.dev/unicode-0.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "uuid",
@@ -1184,7 +1226,7 @@
       "languageVersion": "3.0"
     }
   ],
-  "generated": "2025-06-05T01:21:17.631125Z",
+  "generated": "2025-06-05T03:58:12.838789Z",
   "generator": "pub",
   "generatorVersion": "3.7.2",
   "flutterRoot": "file:///home/red/development/flutter",

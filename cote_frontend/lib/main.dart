@@ -1,8 +1,20 @@
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
 import 'pages/chatbot_page.dart';
+import 'services/memory_storage_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  try {
+    // Initialiser le système de stockage en mémoire
+    await MemoryStorageService.init();
+    print('✅ Service de stockage en mémoire initialisé avec succès');
+    
+  } catch (e) {
+    print('❌ Erreur lors de l\'initialisation: $e');
+  }
+  
   runApp(const MyApp());
 }
 
