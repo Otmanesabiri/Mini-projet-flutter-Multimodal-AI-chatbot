@@ -20,6 +20,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
   final DeepSeekService _deepSeekService = DeepSeekService();
   final ImagePicker _imagePicker = ImagePicker();
   
+
   bool _isLoading = false;
   File? _selectedImage;
   Conversation? _currentConversation;
