@@ -18,7 +18,7 @@ response_cache = {}
 CACHE_DURATION = timedelta(hours=1)  # Cache valide pendant 1 heure
 
 # Clé API DeepSeek (à remplacer par votre clé)
-DEEPSEEK_API_KEY = "sk-c1211bf1366946d3a67b7c967bce1dc6"  # Remplacez par votre clé API
+DEEPSEEK_API_KEY = "YOUR_DEEPSEEK_API_KEY"  # Remplacez par votre clé API
 
 # Initialisation de l'application
 app = FastAPI(
