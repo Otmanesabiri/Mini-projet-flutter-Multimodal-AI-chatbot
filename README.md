@@ -1,4 +1,4 @@
-# AI Multimodal Chatbot Application
+# AI Chatbot Application
 
 ## Nouveautés: Support DeepSeek
 
